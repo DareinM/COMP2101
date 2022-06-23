@@ -12,7 +12,7 @@ fi
 
 #initializing lxdbr0
 
-if test lxdbr0;
+if test 'ip l | grep lxdbr0';
 then
  echo "lxdbr0 exists"
 else
@@ -20,7 +20,7 @@ else
 fi
 
 #launching a container
-if test 'COMP2101-S22 > lxc list';
+if test 'lxc list | grep COMP2101-S22';
 then
  echo "Already launched"
 else
@@ -28,7 +28,7 @@ else
 fi
 
 #Associating COMP2101-S22 name with container's Ip address in /etc/hosts
-if test 'COMP2101-S22 > sudo /etc/hosts';
+if test 'grep COMP2101-S22 /etc/hosts';
 then
  echo "COMP2101-S22 is already associated with container's IP address"
 else
@@ -36,7 +36,7 @@ else
 fi
 
 #Installing Apache2
-if test 'apache2 > lxc exec COMP2101-S22 bash';
+if test 'lxc exec COMP2101-S22 service apache2 status';
 then
  echo "apache2 is already installed"
 else
