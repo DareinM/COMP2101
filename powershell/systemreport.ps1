@@ -1,88 +1,37 @@
-#Lab4
+#Lab4 Updated
 
-#generating Hardaware Information
-function Hardware-Info
+
+#Defining Parameters
+Param(
+   [Parameter(position=1)][switch]$system , [Parameter(Position=2)][switch]$disk , [Parameter(Position=3)][switch]$network
+)
+
+#Settling the parameters using if...else
+if ($system -ne $true -and $disk -ne $true -and $network -ne $true) 
 {
- Write-host "System Hardware Information"
- get-wmiobject -class Win32_ComputerSystem | fl Description
+Hardware-Info  
+OS-Info  
+CPU-Info
+GPU-Info
+Adapter-Info
+RAM-Info
+get-mydisks
 }
 
-#Operatong System Information
-function OS-Info
+elseif ($disk -eq $true) 
 {
- Write-host "OS Information"
- get-wmiobject -class Win32_OperatingSystem | fl Name, Version
+get-mydisks
 }
 
-#CPU Information
-function CPU-Info
+elseif ($network -eq $true) 
 {
- Write-host "System Processor Information"
- get-wmiobject -class win32_processor | select Description, CurrentClockSpeed, NumberOfCores, @{n="L1CacheSize";e={switch($_.L1CacheSize){$null{$empty="data unavailable"}};$empty}}, L2CacheSize, L3CacheSize
+Adapter-Info
 }
 
-#RAM Information
-function RAM-Info
+elseif ($system -eq $true)
 {
-Write-host "RAM Information"
-$total = 0
-get-wmiobject -class win32_physicalmemory |
-  foreach { 
-    New-Object -TypeName psObject -Property @{ 
-      Vendor = $_.Manufacturer
-      Description = $_.Description
-      Size = $_.Capacity/1gb
-      Bank = $_.BankLabel
-      Slot = $_.DeviceLocator
-      }
-      $total += $_.capacity/1gb
-      }|
-ft Vendor, Description, Size, Speed, Bank, Slot
-"Total RAM: ${total}GB"}
-
-#Physical Disk Drive Information
-function Disk-Info
-{
-write-host "Disk Information"
-$diskdrives = Get-CimInstance -class CIM_diskdrive
- foreach ($disk in $diskdrives) {
-     $partitions = $disk|get-cimassociatedinstance -resultclassname CIM_diskpartition
-   foreach ($partition in $partitions) {
-          $logicaldisks = $partition | get-cimassociatedinstance -resultclassname CIM_logicaldisk
-          foreach ($logicaldisk in $logicaldisks) {
-             new-object -typename psobject -property @{
-               Vendor = $disk.Manufacturer
-               Model = $disk.Model
-               Drive = $logicaldisk.deviceid
-               Size = $logicaldisk.size / 1gb -as [int]
-              "Space(GB)" = $logicaldisk.freespace/1gb -as [int]
-              "Space(%)" = ([string]((($logicalDisk.FreeSpace / $logicalDisk.Size) * 100) -as [int]) + '%')} | ft Drive, Vendor, Model, Size, "space(GB)", "Space(%)"
-            }
-      }
-  }
+CPU-Info
+GPU-Info
+OS-Info
+RAM-Info
 }
-
-# Lab3 Report
-function Adapter-Info
-{
-Write-host "Network Adapter Informtion"
-get-wmiobject -class win32_networkadapterconfiguration  |
-Format-Table Description, Index,
-IPAddress, IPSubnet, DNSDomain, DNSServerSearchOrder,
-@{n="DNSDomain";e={switch($_.DNSDomain){$null{$empty="data unavailable";$empty}};if($null -ne $_.DNSDomain){$_.DNSDomain}}},
-@{n="DNSServerSearchOrder";e={switch($_.DNSServerSearchOrder){$null{$empty="data unavailable";$empty}};if($null -ne $_.DNSServerSearchOrder){$_.DNSServerSearchOrder}}}
-}
-
-# Graphical Interface Information with Screen Resolution
-function GPU-Info
-{
-  Write-host "Graphics Card Information"
-  $horizontalpixels = (get-wmiobject -class Win32_videocontroller).CurrentHorizontalResolution -as [String]
-  $verticalpixels = (gwmi -classNAME win32_videocontroller).CurrentVerticalresolution -as [string]
-  $screenresolution = $horizontalpixels + " x " + $verticalpixels
-  gwmi -classNAME win32_videocontroller| fl @{n = "Video Card Vendor"; e={$_.AdapterCompatibility}}, Description, @{n="Screen Resolution"; e={$screenresolution -as [string]}}
-}
-
-param (Select-Object GPU-Info, RAM-Info, CPU-Info, OS-Info )
-
-

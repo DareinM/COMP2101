@@ -58,6 +58,27 @@ ft Vendor, Description, Size, Speed, Bank, Slot
 "Total RAM: ${total}GB"}
 
 
+function Disk-Info
+{
+write-host "Disk Information"
+$diskdrives = Get-CimInstance -class CIM_diskdrive
+ foreach ($disk in $diskdrives) {
+     $partitions = $disk|get-cimassociatedinstance -resultclassname CIM_diskpartition
+   foreach ($partition in $partitions) {
+          $logicaldisks = $partition | get-cimassociatedinstance -resultclassname CIM_logicaldisk
+          foreach ($logicaldisk in $logicaldisks) {
+             new-object -typename psobject -property @{
+               Vendor = $disk.Manufacturer
+               Model = $disk.Model
+               Drive = $logicaldisk.deviceid
+               Size = $logicaldisk.size / 1gb -as [int]
+              "Space(GB)" = $logicaldisk.freespace/1gb -as [int]
+              "Space(%)" = ([string]((($logicalDisk.FreeSpace / $logicalDisk.Size) * 100) -as [int]) + '%')} | ft Drive, Vendor, Model, Size, "space(GB)", "Space(%)"
+            }
+      }
+  }
+}
+
 function Adapter-Info
 {
 Write-host "Network Adapter Informtion"
