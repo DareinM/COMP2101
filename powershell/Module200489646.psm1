@@ -79,6 +79,3 @@ function GPU-Info
 }
 
 
-Welcome
-get-cpuinfo
-get-mydisks

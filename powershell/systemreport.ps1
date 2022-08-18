@@ -83,13 +83,6 @@ function GPU-Info
   gwmi -classNAME win32_videocontroller| fl @{n = "Video Card Vendor"; e={$_.AdapterCompatibility}}, Description, @{n="Screen Resolution"; e={$screenresolution -as [string]}}
 }
 
-# Calling Functions
-Hardware-Info
-OS-Info
-CPU-Info
-RAM-Info
-Disk-Info
-Adapter-Info
-GPU-Info
+param (Select-Object GPU-Info, RAM-Info, CPU-Info, OS-Info )
 
 
